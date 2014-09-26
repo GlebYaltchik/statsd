@@ -2,6 +2,7 @@
 
 var util    = require('util')
   , net    = require('net')
+  , crc32 = require('./lib/crc').crc32
   , config = require('./lib/config')
   , helpers = require('./lib/helpers')
   , fs     = require('fs')
@@ -198,13 +199,28 @@ config.configFile(process.argv[2], function (config) {
       }
 
       for (var midx in metrics) {
-        if (metrics[midx].length === 0) {
+
+        var currMetric = metrics[midx].toString()
+
+        if (currMetric.length === 0) {
           continue;
         }
         if (config.dumpMessages) {
-          l.log(metrics[midx].toString());
+          l.log(currMetric);
         }
-        var bits = metrics[midx].toString().split(':');
+
+        var crcMatch = undefined;
+        if (crcMatch = currMetric.match(/^([^%]+)%([0-9]+)$/)) {
+          currMetric = crcMatch[1];
+          if (crc32(currMetric) != crcMatch[2]) {
+            l.log('Bad CRC: "' + currMetric + '"')
+            counters[bad_lines_seen]++;
+            stats.messages.bad_lines_seen++;
+            continue;
+          }
+        };
+
+        var bits = currMetric.split(':');
         var key = bits.shift()
                       .replace(/\s+/g, '_')
                       .replace(/\//g, '-')
@@ -225,7 +241,7 @@ config.configFile(process.argv[2], function (config) {
           var sampleRate = 1;
           var fields = bits[i].split("|");
           if (!helpers.is_valid_packet(fields)) {
-              l.log('Bad line: ' + fields + ' in msg "' + metrics[midx] +'"');
+              l.log('Bad line: ' + fields + ' in msg "' + currMetric +'"');
               counters[bad_lines_seen]++;
               stats.messages.bad_lines_seen++;
               continue;
