@@ -12,7 +12,7 @@ Optional Variables:
 
   backends:         an array of backends to load. Each backend must exist
                     by name in the directory backends/. If not specified,
-                    the default graphite backend will be loaded. 
+                    the default graphite backend will be loaded.
                     * example for console and graphite:
                     [ "./backends/console", "./backends/graphite" ]
   server:           the server to load. The server must exist by name in the directory
@@ -39,6 +39,8 @@ Optional Variables:
                     negative values mean to use "top" Nth percentile(s) values
                     [%, default: 90]
   flush_counts:     send stats_counts metrics [default: true]
+
+  force_crc:        don't accept metrics without crc32 protection [default: false]
 
   keyFlush:         log the most frequently sent keys [object, default: undefined]
     interval:       how often to log frequent keys [ms, default: 0]

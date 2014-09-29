@@ -218,7 +218,14 @@ config.configFile(process.argv[2], function (config) {
             stats.messages.bad_lines_seen++;
             continue;
           }
-        };
+        } else {
+          if (config.force_crc) {
+            l.log("CRC reqired: \"" + currMetric + '"')
+            counters[bad_lines_seen]++;
+            stats.messages.bad_lines_seen++;
+            continue;
+          }
+        }
 
         var bits = currMetric.split(':');
         var key = bits.shift()
